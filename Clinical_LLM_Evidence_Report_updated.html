@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clinical LLM Benchmarks Evidence Report</title>
+  <meta name="author" content="Ram Paragi">
+  <meta name="description" content="Evidence-focused analysis of the Nature Medicine clinical LLM benchmark article, codebase, and datasets.">
+  <meta property="og:title" content="Clinical LLM Benchmarks Evidence Report">
+  <meta property="og:description" content="A hype-resistant review of the Nature Medicine clinical LLM benchmark article, codebase, and datasets.">
+  <meta property="og:type" content="article">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="Report navigation">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">CL</div>
+        <div>
+          <h1>Clinical LLM Benchmarks</h1>
+          <p>Evidence report by Ram Paragi.</p>
+        </div>
+      </div>
+      <div class="side-links" aria-label="Primary links">
+        <a href="https://www.nature.com/articles/s41591-026-04431-5">Nature article</a>
+        <a href="https://datadrivenmed.github.io/resources/">Other resources</a>
+        <a href="https://datadrivenmed.github.io/LLM-Faculty-Brief/">Faculty & trainee brief</a>
+      </div>
+      <label class="toc-title" for="site-search">Search Report</label>
+      <input class="search" id="site-search" type="search" placeholder="Search claims, MedQA, HealthBench">
+      <div class="toc-title">Contents</div>
+      <nav class="toc">
+        <a class="depth-1" href="#clinical-llm-benchmarks-article-codebase-and-dataset-insight-report">Clinical LLM Benchmarks: Article, Codebase, and Dataset Insight Report</a>
+<a class="depth-2" href="#executive-summary">Executive Summary</a>
+<a class="depth-2" href="#hype-versus-evidence-memo">Hype Versus Evidence Memo</a>
+<a class="depth-3" href="#claims-evidence-table">Claims/Evidence Table</a>
+<a class="depth-2" href="#source-inventory">Source Inventory</a>
+<a class="depth-3" href="#article">Article</a>
+<a class="depth-3" href="#codebase">Codebase</a>
+<a class="depth-3" href="#medqa-dataset">MedQA Dataset</a>
+<a class="depth-3" href="#healthbench-dataset">HealthBench Dataset</a>
+<a class="depth-2" href="#what-the-paper-actually-tested">What The Paper Actually Tested</a>
+<a class="depth-3" href="#the-question">The Question</a>
+<a class="depth-3" href="#the-model-groups">The Model Groups</a>
+<a class="depth-3" href="#the-three-benchmark-layers">The Three Benchmark Layers</a>
+<a class="depth-3" href="#main-reported-results">Main Reported Results</a>
+<a class="depth-3" href="#what-the-result-does-not-prove">What The Result Does Not Prove</a>
+<a class="depth-2" href="#codebase-architecture">Codebase Architecture</a>
+<a class="depth-2" href="#end-to-end-workflow">End-To-End Workflow</a>
+<a class="depth-2" href="#python-benchmark-pipeline">Python Benchmark Pipeline</a>
+<a class="depth-3" href="#dependencies">Dependencies</a>
+<a class="depth-3" href="#model-constants">Model Constants</a>
+<a class="depth-3" href="#input-loaders">Input Loaders</a>
+<a class="depth-3" href="#model-registry-logic">Model Registry Logic</a>
+<a class="depth-3" href="#generation-path">Generation Path</a>
+<a class="depth-3" href="#search-fallbacks">Search Fallbacks</a>
+<a class="depth-3" href="#run-metadata">Run Metadata</a>
+<a class="depth-2" href="#medqa-analysis">MedQA Analysis</a>
+<a class="depth-3" href="#dataset-shape">Dataset Shape</a>
+<a class="depth-3" href="#pipeline-expectation">Pipeline Expectation</a>
+<a class="depth-3" href="#scoring-design">Scoring Design</a>
+<a class="depth-3" href="#technical-notes">Technical Notes</a>
+<a class="depth-2" href="#healthbench-analysis">HealthBench Analysis</a>
+<a class="depth-3" href="#dataset-shape-2">Dataset Shape</a>
+<a class="depth-3" href="#preparation">Preparation</a>
+<a class="depth-3" href="#grading-prompt">Grading Prompt</a>
+<a class="depth-3" href="#single-judge-vs-panel">Single Judge vs Panel</a>
+<a class="depth-3" href="#score-construction">Score Construction</a>
+<a class="depth-3" href="#rerun-helper">Rerun Helper</a>
+<a class="depth-2" href="#real-clinical-queries-and-the-review-platform">Real Clinical Queries And The Review Platform</a>
+<a class="depth-3" href="#benchmark-bundle-builder">Benchmark Bundle Builder</a>
+<a class="depth-3" href="#rater-entry">Rater Entry</a>
+<a class="depth-3" href="#database-schema">Database Schema</a>
+<a class="depth-3" href="#assignment-logic">Assignment Logic</a>
+<a class="depth-3" href="#rater-ui">Rater UI</a>
+<a class="depth-3" href="#evaluation-save-logic">Evaluation Save Logic</a>
+<a class="depth-3" href="#admin-and-export">Admin And Export</a>
+<a class="depth-3" href="#security-caveat">Security Caveat</a>
+<a class="depth-2" href="#evidence-map-article-claims-to-code">Evidence Map: Article Claims To Code</a>
+<a class="depth-2" href="#important-technical-findings">Important Technical Findings</a>
+<a class="depth-3" href="#1-the-repository-matches-the-article-s-high-level-workflow">1. The repository matches the article&#x27;s high-level workflow</a>
+<a class="depth-3" href="#2-it-is-not-a-complete-reproduction-package">2. It is not a complete reproduction package</a>
+<a class="depth-3" href="#3-medqa-preparation-needs-documentation">3. MedQA preparation needs documentation</a>
+<a class="depth-3" href="#4-manual-model-imports-are-central-not-optional">4. Manual model imports are central, not optional</a>
+<a class="depth-3" href="#5-healthbench-grading-is-strong-but-not-neutral">5. HealthBench grading is strong but not neutral</a>
+<a class="depth-3" href="#6-search-fallback-can-change-experimental-conditions">6. Search fallback can change experimental conditions</a>
+<a class="depth-3" href="#7-the-clinician-platform-s-assignment-model-is-thoughtful">7. The clinician platform&#x27;s assignment model is thoughtful</a>
+<a class="depth-3" href="#8-admin-security-should-be-tightened-before-real-deployment">8. Admin security should be tightened before real deployment</a>
+<a class="depth-3" href="#9-the-public-repository-does-not-appear-to-implement-manuscript-statistics">9. The public repository does not appear to implement manuscript statistics</a>
+<a class="depth-2" href="#reproducibility-assessment">Reproducibility Assessment</a>
+<a class="depth-3" href="#local-verification-performed">Local Verification Performed</a>
+<a class="depth-3" href="#what-is-reproducible-from-public-materials">What is reproducible from public materials</a>
+<a class="depth-3" href="#what-is-partially-reproducible">What is partially reproducible</a>
+<a class="depth-3" href="#what-is-not-publicly-reproducible">What is not publicly reproducible</a>
+<a class="depth-3" href="#recommendation-on-further-runs">Recommendation On Further Runs</a>
+<a class="depth-3" href="#no-cost-smoke-test-status">No-Cost Smoke Test Status</a>
+<a class="depth-3" href="#minimum-reproducibility-checklist">Minimum reproducibility checklist</a>
+<a class="depth-2" href="#non-technical-interpretation">Non-Technical Interpretation</a>
+<a class="depth-3" href="#for-clinicians">For clinicians</a>
+<a class="depth-3" href="#for-health-system-leaders">For health system leaders</a>
+<a class="depth-3" href="#for-compliance-and-governance-teams">For compliance and governance teams</a>
+<a class="depth-3" href="#for-technical-teams">For technical teams</a>
+<a class="depth-2" href="#technical-risk-register">Technical Risk Register</a>
+<a class="depth-2" href="#suggested-follow-on-work">Suggested Follow-On Work</a>
+<a class="depth-3" href="#if-the-goal-is-a-publishable-technical-reproduction">If the goal is a publishable technical reproduction</a>
+<a class="depth-3" href="#if-the-goal-is-a-local-hospital-evaluation">If the goal is a local hospital evaluation</a>
+<a class="depth-3" href="#if-the-goal-is-a-non-technical-briefing">If the goal is a non-technical briefing</a>
+<a class="depth-2" href="#technical-appendix-file-by-file-notes">Technical Appendix: File-By-File Notes</a>
+<a class="depth-3" href="#readme-md"><code>README.md</code></a>
+<a class="depth-3" href="#clinical-tools-extract-evaluation-pipeline-py"><code>clinical_tools_extract/evaluation_pipeline.py</code></a>
+<a class="depth-3" href="#clinical-tools-extract-rerun-failed-healthbench-py"><code>clinical_tools_extract/rerun_failed_healthbench.py</code></a>
+<a class="depth-3" href="#clinical-tools-extract-requirements-txt"><code>clinical_tools_extract/requirements.txt</code></a>
+<a class="depth-3" href="#clinical-tools-extract-env-example"><code>clinical_tools_extract/.env.example</code></a>
+<a class="depth-3" href="#clinical-eval-platform-scripts-build-benchmark-mjs"><code>clinical_eval_platform/scripts/build-benchmark.mjs</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-page-jsx"><code>clinical_eval_platform/app/page.jsx</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-eval-evalclient-jsx"><code>clinical_eval_platform/app/eval/EvalClient.jsx</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-session-route-js"><code>clinical_eval_platform/app/api/session/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-assignments-route-js"><code>clinical_eval_platform/app/api/assignments/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-evaluations-route-js"><code>clinical_eval_platform/app/api/evaluations/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-lib-server-schema-js"><code>clinical_eval_platform/lib/server/schema.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-lib-server-db-js"><code>clinical_eval_platform/lib/server/db.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-admin-page-jsx"><code>clinical_eval_platform/app/admin/page.jsx</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-admin-export-route-js"><code>clinical_eval_platform/app/api/admin/export/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-proxy-js"><code>clinical_eval_platform/proxy.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-admin-stats-route-js"><code>clinical_eval_platform/app/api/admin/stats/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-admin-reset-route-js"><code>clinical_eval_platform/app/api/admin/reset/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-app-api-admin-raters-route-js"><code>clinical_eval_platform/app/api/admin/raters/route.js</code></a>
+<a class="depth-3" href="#clinical-eval-platform-env-example"><code>clinical_eval_platform/.env.example</code></a>
+<a class="depth-2" href="#technical-appendix-command-map">Technical Appendix: Command Map</a>
+<a class="depth-2" href="#technical-appendix-glossary">Technical Appendix: Glossary</a>
+<a class="depth-2" href="#bottom-line-assessment">Bottom-Line Assessment</a>
+<a class="depth-2" href="#sources">Sources</a>
+      </nav>
+    </aside>
+    <main class="content">
+      <div class="topbar">
+        <strong>Clinical LLM Evidence Report</strong>
+        <span>
+          <a href="https://datadrivenmed.github.io/resources/">Resources</a>
+          <a href="https://datadrivenmed.github.io/LLM-Faculty-Brief/">Faculty brief</a>
+          <a href="#clinical-llm-benchmarks-article-codebase-and-dataset-insight-report">Top</a>
+        </span>
+      </div>
+      <div class="article-wrap">
+        <section class="report-hero" aria-labelledby="site-title">
+          <div class="hero-copy">
+            <p class="eyebrow">Nature Medicine Article Audit</p>
+            <h2 id="site-title">What the clinical LLM benchmark evidence actually shows.</h2>
+            <p>A static evidence site separating paper findings, repository behavior, dataset reality, reproducibility gaps, and hype-resistant interpretation.</p>
+            <div class="hero-meta">
+              <span>Prepared by <strong>Ram Paragi</strong></span>
+              <a href="https://www.nature.com/articles/s41591-026-04431-5">Read the Nature article</a>
+              <a href="https://datadrivenmed.github.io/resources/">DataDrivenMed resources</a>
+            </div>
+          </div>
+          <aside class="evidence-panel" aria-label="Evidence summary">
+            <div class="metric"><strong>3</strong><span>Benchmark layers: MedQA, HealthBench, and real clinical queries.</span></div>
+            <div class="metric"><strong>0</strong><span>Paid model or clinical-tool API calls used for this audit.</span></div>
+            <div class="metric"><strong>1</strong><span>Local repository clone checked at a fixed commit.</span></div>
+            <div class="metric"><strong>2</strong><span>Public datasets inspected through schema and sample rows.</span></div>
+          </aside>
+        </section>
+        <section class="quick-read" aria-label="Quick read">
+          <article><h3>Core Read</h3><p>The paper is meaningful, but not fully reproducible from public materials alone.</p></article>
+          <article><h3>Strongest Evidence</h3><p>RCQ clinician review is the strongest layer, but the data is private.</p></article>
+          <article><h3>Code Reality</h3><p>The repo is real workflow infrastructure, not a one-command paper reproduction.</p></article>
+          <article><h3>Next Step</h3><p>No-cost fixtures before any paid API reproduction.</p></article>
+        </section>
+        <div class="empty-state" id="empty-state">No visible sections match the current search.</div>
+        <article class="report" id="report">
+          <h1 id="clinical-llm-benchmarks-article-codebase-and-dataset-insight-report">Clinical LLM Benchmarks: Article, Codebase, and Dataset Insight Report</h1>
+<p>Prepared: 2026-06-12</p>
+<p>This report analyzes the Nature Medicine article &quot;General-purpose large language models outperform specialized clinical AI tools on medical benchmarks,&quot; the public codebase at https://github.com/nyuolab/clinical-llm-benchmarks, and the two public benchmark datasets referenced by the article:</p>
+<ul><li>MedQA-USMLE-4-options: https://huggingface.co/datasets/GBaker/MedQA-USMLE-4-options</li><li>HealthBench: https://huggingface.co/datasets/openai/healthbench</li></ul>
+<p>The Nature article page used as the source of truth is:</p>
+<p>https://www.nature.com/articles/s41591-026-04431-5</p>
+<p>This is an audit and explanation report. It does not rerun model generations, call paid APIs, query clinical tools, or reproduce manuscript statistics from scratch.</p>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The article evaluates whether specialized clinical AI tools actually outperform frontier general-purpose large language models in medical tasks. The study compares OpenEvidence and UpToDate Expert AI against GPT-5.2, Gemini 3.1 Pro Preview, Claude Opus 4.6, and, for the real clinical query benchmark, Google Search AI Overview. It uses three evaluation layers: MedQA for multiple-choice medical knowledge, HealthBench for rubric-based health response quality, and a private Real Clinical Queries benchmark built from 100 de-identified physician queries.</p>
+<p>The central finding is straightforward: in this study, general-purpose frontier LLMs outperform the specialized clinical tools across all evaluated stages. This does not mean frontier LLMs are automatically safe for independent clinical deployment. It means that, under these benchmark designs, the commercial clinical tools did not show the expected performance advantage over frontier models, despite their clinical branding and presumed domain-specific retrieval or tuning.</p>
+<p>The codebase is best understood as two connected systems:</p>
+<ol><li>A Python benchmark pipeline for preparing HealthBench samples, generating or importing model answers, scoring MedQA, grading HealthBench with an LLM judge panel, and organizing a run matrix.</li><li>A Next.js and Postgres blinded clinician review platform for turning a local matrix of model responses into anonymized rater tasks, collecting clinician ratings, managing assignments, and exporting results.</li></ol>
+<p>The public repository supports a substantial part of the article&#x27;s workflow, but it is not a complete one-command reproduction package. The biggest reproducibility gaps are the private RCQ dataset, manually collected browser outputs for OpenEvidence, UpToDate Expert AI, and Google AI Overview, the exact historical model behavior of February 2026 frontier systems, the MedQA preparation step from raw Hugging Face rows into the pipeline&#x27;s expected JSONL format, and the manuscript-level statistical analysis scripts.</p>
+<p>For non-technical readers, the takeaway is: the paper is less about whether any single chatbot is &quot;good&quot; or &quot;bad&quot; and more about independent verification. It shows that health systems should not assume a tool is superior because it is marketed for clinical use. Procurement and governance should require benchmark evidence, local validation, clinician review, safety review, and monitoring.</p>
+<p>For technical readers, the strongest part of the repository is its explicit separation of model generation/import, benchmark scoring, and blinded human evaluation. The weakest parts are around complete reproducibility: missing raw response artifacts, manual collection paths, a likely missing MedQA transformation script, reliance on LLM-as-judge scoring defaults, and incomplete admin authentication coverage in the clinician review app as inspected.</p>
+<h2 id="hype-versus-evidence-memo">Hype Versus Evidence Memo</h2>
+<p>The social-media version of this paper is likely to become: &quot;Frontier LLMs beat clinical AI tools.&quot; That is directionally true, but incomplete. The more evidence-faithful version is: under this paper&#x27;s three benchmark settings, frontier LLMs outperformed OpenEvidence and UpToDate Expert AI, while the strongest real-world evidence came from a private clinician-query benchmark that the public cannot independently inspect.</p>
+<p>The paper is meaningful because it tests clinical AI tools head-to-head rather than accepting clinical branding as proof. It is also limited because the most important benchmark, RCQ, cannot be released; clinical tool outputs were manually collected through browser interfaces; and the public codebase is supporting infrastructure, not a one-command reproduction package.</p>
+<p>My read: this is not empty hype. The article asks the right question and provides real evidence. But the public materials support an audit of the workflow more strongly than they support full independent reproduction of the headline numbers.</p>
+<h3 id="claims-evidence-table">Claims/Evidence Table</h3>
+<div class="table-wrap"><table><thead><tr><th>Evidence strength</th><th>Claim</th><th>What supports it</th><th>What limits it</th></tr></thead><tbody><tr><td>Strong</td><td>The article tested three layers: MedQA, HealthBench, and RCQ.</td><td>The Nature article Methods, figures, and repo layout all align with this design.</td><td>None material for the existence of the design.</td></tr><tr><td>Strong</td><td>The repo contains real benchmark and blinded-review infrastructure.</td><td>Local clone includes the Python pipeline, HealthBench preparation/scoring, model import/generation modes, Next.js rater app, Postgres schema, assignment slots, and admin export.</td><td>It is infrastructure, not the complete manuscript analysis package.</td></tr><tr><td>Strong</td><td>Raw MedQA from Hugging Face does not directly match the pipeline&#x27;s MedQA scorer input shape.</td><td>Local sample rows have <code>question</code>, <code>answer</code>, <code>options</code>, <code>answer_idx</code>, etc.; the scorer expects a <code>correct</code> key and prompt markers <code>## Choices</code> and <code>## Instructions</code>.</td><td>This does not prove the authors lacked a preparation script internally; it shows the public repo does not expose it clearly.</td></tr><tr><td>Strong</td><td>HealthBench rows match the public preparation function&#x27;s expected shape for single-turn prompts.</td><td>Local HealthBench sample rows expose <code>prompt</code>, <code>prompt_id</code>, and <code>rubrics</code>; the local <code>prepare-healthbench</code> command successfully prepared two single-turn rows from a three-row sample.</td><td>The Hugging Face dataset-server <code>rows</code>/<code>info</code> endpoints currently fail because of schema mismatch across files, so file-specific loading is safer.</td></tr><tr><td>Partial</td><td>The public benchmark subset can be recreated from public data and seed <code>62</code>.</td><td>The article says this; HealthBench preparation code implements seed-based sampling.</td><td>MedQA transformation is not exposed; HealthBench file/config choice must be handled carefully.</td></tr><tr><td>Partial</td><td>The public repo can reproduce the frontier-model pipeline.</td><td>It can call OpenAI, Anthropic, and Google APIs with deterministic defaults and metadata capture.</td><td>Current API behavior may differ from February 2026 model behavior; search behavior and model aliases can drift.</td></tr><tr><td>Partial</td><td>The repo can include OpenEvidence, UpToDate, and Google AI Overview outputs.</td><td><code>import_from_source</code> and model registry support pre-collected outputs.</td><td>The repo does not collect those outputs itself; original source files are not public.</td></tr><tr><td>Weak</td><td>The public repo alone reproduces Figure 2 and the article&#x27;s statistics.</td><td>It produces scored outputs and clinician CSV exports that could feed statistics.</td><td>The inspected repo does not include the manuscript&#x27;s statistical scripts or the private/source response data needed to recreate the figures.</td></tr><tr><td>Not reproducible publicly</td><td>The RCQ benchmark results can be independently recreated.</td><td>The article describes the design and the app supports it.</td><td>The RCQ questions are private clinical-derived data and are not publicly released.</td></tr><tr><td>Not reproducible publicly</td><td>The exact clinical-tool benchmark outputs can be independently recreated from code alone.</td><td>The repo can import them.</td><td>The clinical tools were manually queried through browser interfaces; exact outputs and hidden retrieval/prompt behavior are not public.</td></tr></tbody></table></div>
+<h2 id="source-inventory">Source Inventory</h2>
+<h3 id="article">Article</h3>
+<p>The Nature article is a Nature Medicine Brief Communication available at https://www.nature.com/articles/s41591-026-04431-5. The article states that the evaluation used:</p>
+<ul><li>500 randomly sampled MedQA questions.</li><li>500 randomly sampled HealthBench single-turn prompts.</li><li>100 de-identified real clinical queries from a HIPAA-compliant NYU Langone GPT instance.</li><li>Three frontier LLMs: GPT-5.2, Gemini 3.1 Pro Preview, and Claude Opus 4.6.</li><li>Two specialized clinical AI tools: OpenEvidence and UpToDate Expert AI.</li><li>Google Search AI Overview for the RCQ stage.</li><li>Twelve blinded US clinician raters for RCQ.</li><li>Three independent ratings per question-model response pair.</li><li>1,800 initial model-question annotations, reduced after 32 refusals were excluded.</li></ul>
+<p>The article&#x27;s Methods section says the public MedQA and HealthBench subsets can be reproduced with seed <code>62</code>, while the RCQ dataset cannot be publicly released because it derives from clinical environment queries under institutional review and data use constraints.</p>
+<h3 id="codebase">Codebase</h3>
+<p>Repository: https://github.com/nyuolab/clinical-llm-benchmarks</p>
+<p>The README identifies two main directories:</p>
+<ul><li><code>clinical_tools_extract/</code>: Python generation and evaluation pipeline.</li><li><code>clinical_eval_platform/</code>: Next.js clinician rating platform.</li></ul>
+<p>The repository license is GNU AGPL v3 for source code. The README states that non-code materials such as figures, diagrams, and documentation are CC BY 4.0 unless otherwise noted.</p>
+<h3 id="medqa-dataset">MedQA Dataset</h3>
+<p>Dataset page: https://huggingface.co/datasets/GBaker/MedQA-USMLE-4-options</p>
+<p>Read-only Hugging Face metadata showed:</p>
+<ul><li>Dataset id: <code>GBaker/MedQA-USMLE-4-options</code></li><li>Dataset SHA: <code>0fb93dd23a7339b6dcd27e241cb9b5eca62d4d18</code></li><li>Last modified: 2023-01-24</li><li>License tag: <code>cc-by-4.0</code></li><li>Splits: <code>train</code> and <code>test</code></li><li>Train examples: 10,178</li><li>Test examples: 1,273</li><li>Files: <code>phrases_no_exclude_train.jsonl</code>, <code>phrases_no_exclude_test.jsonl</code></li><li>Fields: <code>question</code>, <code>answer</code>, <code>options</code>, <code>meta_info</code>, <code>answer_idx</code>, <code>metamap_phrases</code></li></ul>
+<p>The article used 500 sampled MedQA items. The raw dataset schema does not directly match the public pipeline&#x27;s scoring expectation, which is important for reproducibility.</p>
+<h3 id="healthbench-dataset">HealthBench Dataset</h3>
+<p>Dataset page: https://huggingface.co/datasets/openai/healthbench</p>
+<p>Read-only Hugging Face metadata showed:</p>
+<ul><li>Dataset id: <code>openai/healthbench</code></li><li>Dataset SHA: <code>40ee1968852fc57f625934251ac22be47077a8fb</code></li><li>Last modified: 2025-08-27</li><li>License: MIT</li><li>Split: <code>test</code></li><li>Files include <code>consensus_2025-05-09-20-00-46.jsonl</code>, <code>hard_2025-05-08-21-00-10.jsonl</code>, <code>2025-05-07-06-14-12_oss_eval.jsonl</code>, and <code>2025-05-07-06-14-12_oss_meta_eval.jsonl</code></li><li>Key fields visible from first-row metadata: <code>example_tags</code>, <code>ideal_completions_data</code>, <code>prompt</code>, <code>prompt_id</code>, <code>rubrics</code>, <code>canary</code></li><li>Each <code>prompt</code> is a list of chat messages with <code>role</code> and <code>content</code>.</li><li>Each <code>rubrics</code> entry has <code>criterion</code>, <code>points</code>, and <code>tags</code>.</li></ul>
+<p>The Hugging Face dataset-server <code>info</code> endpoint currently fails for this dataset because one or more files contain columns that do not match the inferred schema. The <code>first-rows</code> endpoint still exposes the expected HealthBench field structure. This matters because automated loaders may behave differently depending on whether they load a specific file, the default config, or all repository files.</p>
+<h2 id="what-the-paper-actually-tested">What The Paper Actually Tested</h2>
+<h3 id="the-question">The Question</h3>
+<p>The paper asks a practical question: if a clinician or health system pays for, adopts, or trusts a specialized clinical AI tool, is that tool actually better than a frontier general-purpose LLM?</p>
+<p>The implied market assumption is that clinical tools should be better because they may use medical retrieval, domain-specific prompts, curated sources, clinical workflows, or domain-specific tuning. The paper tests that assumption empirically.</p>
+<h3 id="the-model-groups">The Model Groups</h3>
+<p>The study separates models into three groups:</p>
+<ul><li>Frontier API LLMs: GPT-5.2, Gemini 3.1 Pro Preview, Claude Opus 4.6.</li><li>Clinical AI tools: OpenEvidence and UpToDate Expert AI.</li><li>Search-embedded control for RCQ: Google Search AI Overview.</li></ul>
+<p>That grouping matters. GPT, Gemini, and Claude were accessed through APIs. OpenEvidence, UpToDate Expert AI, and Google AI Overview were accessed through browser interfaces. The article explicitly states that clinical tools lack public APIs, which forced browser-based collection and introduced limitations around hidden prompts, retrieval behavior, and formatting.</p>
+<h3 id="the-three-benchmark-layers">The Three Benchmark Layers</h3>
+<p>The article uses a layered design:</p>
+<ol><li>MedQA: multiple-choice medical knowledge.</li><li>HealthBench: open-ended health response quality, graded against rubrics.</li><li>RCQ: real de-identified clinical queries, judged by blinded clinicians.</li></ol>
+<p>This is a strong design choice because each layer tests something different. MedQA tests whether a model can select an answer on exam-style questions. HealthBench tests whether a response satisfies clinically meaningful rubric items. RCQ tests whether clinicians find model answers useful, safe, complete, and clear in a realistic setting.</p>
+<p>The paper treats RCQ as the strongest evidence because it is independent, real-world, and not likely to have been seen in training. HealthBench is useful but less independent because it is an OpenAI-developed benchmark and uses LLM-based grading.</p>
+<h3 id="main-reported-results">Main Reported Results</h3>
+<p>The article reports the following headline results.</p>
+<p>MedQA accuracy:</p>
+<ul><li>Gemini 3.1 Pro: 97.4%</li><li>GPT-5.2: 94.2%</li><li>Claude Opus 4.6: 90.2%</li><li>OpenEvidence: 89.6%</li><li>UpToDate Expert AI: 88.4%</li></ul>
+<p>HealthBench score:</p>
+<ul><li>GPT-5.2: 88.0</li><li>Gemini 3.1 Pro: 79.3</li><li>Claude Opus 4.6: 77.0</li><li>OpenEvidence: 62.6</li><li>UpToDate Expert AI: 61.3</li></ul>
+<p>RCQ mean aggregate clinician rating:</p>
+<ul><li>Gemini 3.1 Pro: 3.62</li><li>GPT-5.2: 3.54</li><li>Claude Opus 4.6: 3.52</li><li>Google AI Overview: 3.27</li><li>OpenEvidence: 3.24</li><li>UpToDate Expert AI: 3.17</li></ul>
+<p>The paper also reports that UpToDate Expert AI refused 19% of RCQ questions, higher than most other models. Safety and hallucination flags did not differ significantly across models in the RCQ analysis, but qualitative error notes were more common for OpenEvidence and Google AI Overview.</p>
+<h3 id="what-the-result-does-not-prove">What The Result Does Not Prove</h3>
+<p>The paper does not prove that frontier LLMs are clinically safe as standalone medical systems. It does not prove that specialized clinical tools are never useful. It does not evaluate all possible medical tasks, all subspecialties, all workflows, all hospitals, or all patient-safety contexts.</p>
+<p>The study is best read as a snapshot of performance under a specific, well-described evaluation design. The authors themselves emphasize that the landscape changes quickly, that clinical tools were queried through browsers, that benchmarks may have contamination, and that latency and citation quality were not evaluated.</p>
+<p>For health systems, the practical conclusion is governance-oriented: do not assume clinical branding equals clinical superiority. Require independent evaluation.</p>
+<h2 id="codebase-architecture">Codebase Architecture</h2>
+<p>The repository has two major subsystems.</p>
+<pre><code class="language-text">clinical_tools_extract/
+  evaluation_pipeline.py
+  rerun_failed_healthbench.py
+  requirements.txt
+  .env.example
+
+clinical_eval_platform/
+  app/
+  lib/server/
+  scripts/build-benchmark.mjs
+  package.json
+  .env.example</code></pre>
+<p>The pipeline and platform serve different parts of the article.</p>
+<p>The Python pipeline supports MedQA and HealthBench generation/scoring. The Next.js platform supports the blinded clinician review process used for RCQ-style evaluations.</p>
+<p>The code does not appear to include the full manuscript statistical analysis layer. It can generate scored outputs and clinician exports, but the specific article-level statistical tests, compact letter displays, regression models, and figure-generation scripts are not visible in the inspected repository files.</p>
+<h2 id="end-to-end-workflow">End-To-End Workflow</h2>
+<p>A practical conceptual workflow looks like this:</p>
+<pre><code class="language-text">Public benchmark data
+  -&gt; sampled/prepared JSONL
+  -&gt; frontier model API generations
+  -&gt; manual/imported clinical tool outputs
+  -&gt; raw per-model JSONL files
+  -&gt; MedQA extraction/scoring
+  -&gt; HealthBench rubric scoring
+  -&gt; summary outputs and run metadata
+
+Real clinical query matrix
+  -&gt; CSV/XLSX with one query column and one response column per model
+  -&gt; blinded benchmark.json for raters
+  -&gt; hidden model_map.json for admins
+  -&gt; Postgres seeded assignment slots
+  -&gt; clinician ratings
+  -&gt; admin CSV export
+  -&gt; external statistical analysis</code></pre>
+<p>The public repo is strongest in the middle of this chain: organizing inputs and outputs, calling APIs, handling retries/checkpoints, scoring HealthBench, and collecting blinded clinician ratings. It is weaker at the boundaries: raw MedQA transformation, proprietary browser collection, private RCQ release, and manuscript statistics.</p>
+<h2 id="python-benchmark-pipeline">Python Benchmark Pipeline</h2>
+<p>The main Python file is <code>clinical_tools_extract/evaluation_pipeline.py</code>.</p>
+<h3 id="dependencies">Dependencies</h3>
+<p>The Python requirements are minimal:</p>
+<ul><li><code>openai</code></li><li><code>python-dotenv</code></li><li><code>tqdm</code></li><li><code>openpyxl</code></li><li><code>anthropic</code></li></ul>
+<p>The code uses the OpenAI SDK directly, optionally imports Anthropic, and calls the Google Generative Language REST API with <code>urllib</code>.</p>
+<p>The pipeline expects API keys through environment variables:</p>
+<ul><li><code>OPENAI_API_KEY</code></li><li><code>ANTHROPIC_API_KEY</code></li><li><code>GOOGLE_API_KEY</code></li></ul>
+<p>HealthBench grading has retry and timeout knobs:</p>
+<ul><li><code>HEALTHBENCH_GRADER_RETRIES</code></li><li><code>HEALTHBENCH_GRADER_BACKOFF</code></li><li><code>HEALTHBENCH_GRADER_MAX_SLEEP_S</code></li><li><code>HEALTHBENCH_GRADER_TIMEOUT_S</code></li></ul>
+<h3 id="model-constants">Model Constants</h3>
+<p>The pipeline defines article-like model IDs:</p>
+<ul><li><code>openai-gpt-5-2</code></li><li><code>google-gemini-3-1-pro-preview</code></li><li><code>anthropic-claude-4-6-opus</code></li><li><code>openevidence-web</code></li><li><code>uptodate-ai</code></li><li><code>google-ai-overview</code></li></ul>
+<p>The default matrix for MedQA and HealthBench includes five models: the three frontier models plus OpenEvidence and UpToDate. Google AI Overview is included in the RCQ-style benchmark CSV model list, not the default MedQA/HealthBench matrix.</p>
+<p>This matches the article design: Google AI Overview is treated as a real-world search-embedded comparator for RCQ, not as a MedQA/HealthBench model in the public benchmark matrix.</p>
+<h3 id="input-loaders">Input Loaders</h3>
+<p>The pipeline can load:</p>
+<ul><li>JSON arrays.</li><li>JSONL files.</li><li>XLSX files.</li></ul>
+<p>It has helpers for normalizing Excel cells, detecting likely question/id columns, writing JSONL, slugifying models and benchmark names, and resolving paths relative to the current working directory or script root.</p>
+<p>This is useful because the pipeline is meant to bridge several data shapes:</p>
+<ul><li>Public benchmark JSONL.</li><li>Imported browser-collected outputs.</li><li>Local CSV/XLSX response matrices.</li><li>Per-model raw run files.</li></ul>
+<h3 id="model-registry-logic">Model Registry Logic</h3>
+<p>The model registry is the abstraction that lets the same <code>generate</code> command handle very different systems.</p>
+<p>The resolver can map a requested model into:</p>
+<ul><li><code>openai_api</code></li><li><code>anthropic_api</code></li><li><code>google_api</code></li><li><code>import_from_source</code></li><li><code>manual_only</code></li></ul>
+<p>If a model is OpenAI-like and not in the registry, the code assumes it can call OpenAI. If a model is one of the clinical/browser-only systems, the code either requires <code>import_from_source</code> through a registry entry or raises an error telling the user that automated answer retrieval is unavailable.</p>
+<p>This is an important design choice. The public repo intentionally does not automate browser scraping for OpenEvidence or UpToDate. That reduces legal, ethical, and maintenance risk, but it means the public repo cannot regenerate those results by itself.</p>
+<h3 id="generation-path">Generation Path</h3>
+<p>The <code>generate_answers</code> function is the central model-answer generation function.</p>
+<p>It supports:</p>
+<ul><li>Parallel generation with <code>ThreadPoolExecutor</code>.</li><li><code>--max-workers</code>.</li><li><code>--limit</code>.</li><li><code>--resume</code> by id key.</li><li>Output checkpoints every N completed rows.</li><li>Optional error rows through <code>--allow-error-rows</code>.</li><li>Run metadata written next to the output.</li><li>Search-enabled generation for supported providers.</li><li>Fallbacks when providers reject parameters such as temperature, top_p, or seed.</li></ul>
+<p>Provider-specific behavior:</p>
+<ul><li>OpenAI uses the Responses API when search is enabled and Chat Completions otherwise.</li><li>Anthropic uses the Messages API and, when search is enabled, a <code>web_search_20250305</code> tool payload.</li><li>Google uses the Generative Language REST endpoint and adds <code>google_search</code> or <code>google_search_retrieval</code> tool payloads depending on model family.</li></ul>
+<p>The article says frontier model generations used deterministic parameters, search enabled, temperature <code>0.0</code>, and seed <code>62</code> where supported. The code implements those defaults but also warns where the seed is ignored, such as OpenAI search through the Responses API and Anthropic.</p>
+<h3 id="search-fallbacks">Search Fallbacks</h3>
+<p>If search-enabled generation fails, the code attempts a no-search fallback and records fallback events in run metadata.</p>
+<p>This is pragmatic for finishing runs, but it is analytically important. If some rows are answered with search and others are answered without search, the resulting benchmark is no longer a uniform &quot;search-enabled&quot; condition. The metadata records fallback attempts, successes, and failures, so a rigorous analysis should report whether fallbacks occurred and whether they were concentrated in any provider/model.</p>
+<h3 id="run-metadata">Run Metadata</h3>
+<p>For generation tasks, the pipeline writes a latest <code>.run.json</code> and timestamped run metadata file. The metadata includes:</p>
+<ul><li>Inputs and outputs.</li><li>Model requested.</li><li>Resolved provider and API model.</li><li>Generation parameters.</li><li>Runtime stats.</li><li>Search fallback stats.</li><li>Whether API keys were set.</li></ul>
+<p>This is a strong reproducibility feature. It does not make external APIs deterministic, but it records enough context to understand what was attempted.</p>
+<h2 id="medqa-analysis">MedQA Analysis</h2>
+<h3 id="dataset-shape">Dataset Shape</h3>
+<p>The raw Hugging Face MedQA rows have:</p>
+<ul><li><code>question</code></li><li><code>answer</code></li><li><code>options</code></li><li><code>meta_info</code></li><li><code>answer_idx</code></li><li><code>metamap_phrases</code></li></ul>
+<p>The options are a four-choice object with <code>A</code>, <code>B</code>, <code>C</code>, and <code>D</code>.</p>
+<h3 id="pipeline-expectation">Pipeline Expectation</h3>
+<p>The public scoring function <code>process_medqa</code> expects a different shape:</p>
+<ul><li><code>question</code> must contain a section marker <code>## Choices</code>.</li><li><code>question</code> must also contain <code>## Instructions</code>.</li><li>The correct answer is expected in a key named <code>correct</code>.</li><li>The model answer is expected in <code>answer</code>.</li></ul>
+<p>This means raw Hugging Face MedQA cannot be passed directly into <code>process_medqa</code> without transformation. A prepared file such as <code>data/benchmarks/medqa_500.jsonl</code> is referenced in the README example, but the public CLI does not expose a <code>prepare-medqa</code> command analogous to <code>prepare-healthbench</code>.</p>
+<p>This is one of the most important technical reproducibility gaps in the public repository. The article says the subset can be reproduced with seed <code>62</code>, and the raw dataset is public, but the exact prompt format and transformation into the pipeline&#x27;s expected fields are not fully encoded in an obvious public command.</p>
+<h3 id="scoring-design">Scoring Design</h3>
+<p>MedQA scoring uses two extractors:</p>
+<ol><li>Regex answer extraction via <code>MultiChoiceFilter</code>.</li><li>LLM extraction using GPT-4.1.</li></ol>
+<p>The LLM extraction prompt asks for a single answer letter. The extracted letter is compared with the row&#x27;s <code>correct</code> key. Regex agreement is reported as a consistency check.</p>
+<p>The output row receives:</p>
+<ul><li><code>RegEx_answer</code></li><li><code>LLM_extract</code></li><li><code>correctness</code></li></ul>
+<p>The scoring output reports:</p>
+<ul><li>Regex/LLM agreement excluding invalid answers.</li><li>Overall accuracy counting invalids as wrong.</li><li>Accuracy excluding invalids.</li></ul>
+<p>The article says GPT-4.1 extracted final answers and regex extraction was used in parallel as a consistency check, with disagreements manually verified. The code aligns with that general method.</p>
+<h3 id="technical-notes">Technical Notes</h3>
+<p>MedQA is a narrow benchmark. It rewards answer selection, not bedside usefulness. It can show that a model has strong medical exam knowledge, but it does not test whether the model communicates well, refuses appropriately, cites sources, handles ambiguous patient context, or integrates with clinical workflow.</p>
+<p>From a code perspective, MedQA is also the path with the most obvious missing public preparation step. A rigorous reproduction should add a documented transformer:</p>
+<pre><code class="language-text">Hugging Face MedQA row
+  question + options + answer_idx
+  -&gt; sampled 500 rows with seed 62
+  -&gt; prompt string containing ## Choices and ## Instructions
+  -&gt; correct = answer_idx
+  -&gt; id = stable row id</code></pre>
+<p>Without that, two independent users may generate different prompt text even if they sample the same rows.</p>
+<h2 id="healthbench-analysis">HealthBench Analysis</h2>
+<h3 id="dataset-shape-2">Dataset Shape</h3>
+<p>HealthBench rows expose:</p>
+<ul><li><code>prompt</code>: chat-message list.</li><li><code>prompt_id</code>: UUID-like identifier.</li><li><code>rubrics</code>: list of scored criteria.</li><li><code>example_tags</code>: theme/category tags.</li><li><code>canary</code>: identifier string.</li></ul>
+<p>Rubric entries include:</p>
+<ul><li><code>criterion</code></li><li><code>points</code></li><li><code>tags</code></li></ul>
+<p>The first-row metadata shows both positive and negative rubric points. Positive points reward desired behavior. Negative points penalize undesirable behavior when the criterion is met.</p>
+<h3 id="preparation">Preparation</h3>
+<p>The CLI includes <code>prepare-healthbench</code>.</p>
+<p>The function <code>prepare_healthbench_questions</code>:</p>
+<ul><li>Loads the source dataset.</li><li>Keeps only rows where <code>prompt</code> is exactly one user message.</li><li>Samples up to <code>limit</code> rows with random seed <code>62</code>.</li><li>Writes JSONL rows with <code>id</code>, <code>question</code>, <code>prompt_id</code>, and <code>rubrics</code>.</li></ul>
+<p>This matches the article&#x27;s description of sampling 500 single-turn prompts from HealthBench.</p>
+<h3 id="grading-prompt">Grading Prompt</h3>
+<p>The pipeline includes a HealthBench grader template that asks the judge model to evaluate a conversation and rubric item, returning JSON with:</p>
+<ul><li><code>explanation</code></li><li><code>criteria_met</code></li></ul>
+<p>The prompt explicitly handles negative criteria: if a criterion is undesirable, <code>criteria_met=true</code> means the undesirable criterion is present. The scoring code then applies the criterion&#x27;s point value, which may be negative.</p>
+<p>This is a subtle but important design. A negative criterion should not be inverted by the judge. The judge answers whether the criterion is met; the point sign determines whether meeting it helps or hurts.</p>
+<h3 id="single-judge-vs-panel">Single Judge vs Panel</h3>
+<p>HealthBench can run in two modes:</p>
+<ul><li>Single grading model.</li><li>Panel majority.</li></ul>
+<p>The default panel models are:</p>
+<ul><li>Claude Opus 4.6</li><li>Gemini 3.1 Pro Preview</li><li>GPT-5.2</li></ul>
+<p>This aligns with the article&#x27;s method of using a three-model judge panel to reduce single-model bias.</p>
+<p>The panel logic:</p>
+<ul><li>Calls judge models concurrently per criterion.</li><li>Uses majority vote among available judge results.</li><li>Defaults ties to <code>criteria_met=false</code>.</li><li>If all judge calls fail, defaults <code>criteria_met=false</code>.</li><li>Records panel votes and panel failures.</li></ul>
+<p>This failure policy is operationally robust but analytically asymmetric. For positive criteria, a failure-to-false default withholds points. For negative criteria, a failure-to-false default avoids penalty. The report or downstream analysis should track panel failure rates because failures can influence final scores.</p>
+<h3 id="score-construction">Score Construction</h3>
+<p>For each criterion:</p>
+<pre><code class="language-text">points_awarded = points if criteria_met else 0</code></pre>
+<p>For each row:</p>
+<pre><code class="language-text">point_total = sum(points_awarded)
+point_possible = sum(positive points only)</code></pre>
+<p>The final HealthBench score is:</p>
+<pre><code class="language-text">grand_total / grand_possible</code></pre>
+<p>Because negative points can reduce <code>grand_total</code>, the score can reflect penalties without increasing the denominator.</p>
+<h3 id="rerun-helper">Rerun Helper</h3>
+<p>The script <code>rerun_failed_healthbench.py</code> patches already-scored HealthBench files in place. It identifies rubric scores with failed panel votes, reruns those criteria, replaces the score entries, and recomputes totals.</p>
+<p>This is useful for recovering from transient API failures. It should be used carefully because it mutates <code>scored.json</code> files in place. A reproducible workflow should keep backups or use versioned output paths before rerunning failed criteria.</p>
+<h2 id="real-clinical-queries-and-the-review-platform">Real Clinical Queries And The Review Platform</h2>
+<p>The public RCQ data is not available, but the platform that supports RCQ-style blinded review is public.</p>
+<h3 id="benchmark-bundle-builder">Benchmark Bundle Builder</h3>
+<p>The script <code>clinical_eval_platform/scripts/build-benchmark.mjs</code> converts a local <code>query_responses.csv</code> or <code>query_responses.xlsx</code> into blinded app data.</p>
+<p>It detects:</p>
+<ul><li>An optional id/index column.</li><li>A required question/query/prompt column.</li><li>One response column per model.</li></ul>
+<p>It writes:</p>
+<ul><li><code>public/benchmark.json</code>: rater-facing benchmark bundle.</li><li><code>data/model_map.json</code>: admin-only model ID to true model name map.</li><li><code>data/benchmark_questions.json</code>: question id index for assignment seeding.</li></ul>
+<p>The script anonymizes models as <code>Model_A</code>, <code>Model_B</code>, etc. The <code>benchmarkId</code> is the first 16 hex characters of the SHA-256 hash of the source file bytes. That makes the benchmark bundle stable for a given source file and changes when the source matrix changes.</p>
+<p>The generated files are intentionally ignored because they may contain private clinical queries or model outputs.</p>
+<h3 id="rater-entry">Rater Entry</h3>
+<p>The landing page collects:</p>
+<ul><li>Rater name.</li><li>Optional access code.</li></ul>
+<p>The session API:</p>
+<ul><li>Normalizes names.</li><li>Enforces max name length of 80.</li><li>Checks <code>EVAL_ACCESS_CODE</code> if set.</li><li>Uses a Postgres advisory lock to avoid duplicate rows for the same name under concurrent login.</li><li>Reuses an existing rater row by case-insensitive name, preferring the row with existing work.</li></ul>
+<p>This is a simple and practical identity model for a controlled rater study. It is not a strong authentication system.</p>
+<h3 id="database-schema">Database Schema</h3>
+<p>The schema is created lazily by <code>ensureSchema</code>.</p>
+<p>Core tables:</p>
+<ul><li><code>raters</code></li><li><code>evaluations</code></li><li><code>benchmark_models</code></li><li><code>benchmark_state</code></li><li><code>response_review_slots</code></li><li><code>question_review_slots</code></li></ul>
+<p>The key evaluation table stores:</p>
+<ul><li><code>rater_id</code></li><li><code>benchmark_id</code></li><li><code>question_id</code></li><li><code>model_key</code></li><li><code>model_order</code></li><li>Four 1-4 Likert dimensions:</li><li><code>accuracy</code></li><li><code>completeness</code></li><li><code>safety</code></li><li><code>communication</code></li><li>Binary flags:</li><li><code>harmful</code></li><li><code>hallucinated</code></li><li><code>notes</code></li><li><code>is_complete</code></li></ul>
+<p>The schema seeds three response review slots per <code>(benchmark_id, question_id, model_key)</code>. That supports the article&#x27;s design of three independent clinician ratings per model response.</p>
+<h3 id="assignment-logic">Assignment Logic</h3>
+<p>The assignment API:</p>
+<ul><li>Returns existing assignments for a rater.</li><li>Provides remaining-slot stats.</li><li>Claims a configurable number of response items, default 150.</li><li>Randomizes item selection.</li><li>Assigns at most one slot per <code>(question_id, model_key)</code> per claim.</li><li>Avoids assigning the same rater to the same response twice.</li><li>Only steals assignments from other raters if no unassigned slots remain and the existing assignee has not started.</li></ul>
+<p>This is more sophisticated than a simple random sample. It tries to balance study completion against avoiding duplicate rater work.</p>
+<h3 id="rater-ui">Rater UI</h3>
+<p>The evaluation client:</p>
+<ul><li>Loads <code>benchmark.json</code>.</li><li>Loads or claims assignments.</li><li>Randomizes question order per rater.</li><li>Randomizes model-response display order per rater and question.</li><li>Tracks completion.</li><li>Saves ratings through the evaluations API.</li><li>Supports offline-style full-benchmark viewing if assignment lookup fails because the database is unavailable.</li></ul>
+<p>The rating axes match the article:</p>
+<ul><li>Clinical correctness.</li><li>Safety/harm avoidance.</li><li>Completeness.</li><li>Clarity for clinicians.</li></ul>
+<p>The binary flags match the article:</p>
+<ul><li>Potentially harmful recommendation present?</li><li>Hallucinated facts?</li></ul>
+<h3 id="evaluation-save-logic">Evaluation Save Logic</h3>
+<p>The evaluations API validates:</p>
+<ul><li><code>sessionId</code> must be a UUID.</li><li>Likert ratings must be integers 1-4.</li><li>Binary flags must be true, false, or null.</li><li>Notes must be at most 4,000 characters.</li><li>A response must be assigned to the rater unless the benchmark has no seeded slots.</li></ul>
+<p>It upserts the evaluation row and sets <code>is_complete=true</code> only when all four Likert axes and both binary flags are present.</p>
+<h3 id="admin-and-export">Admin And Export</h3>
+<p>The admin page displays:</p>
+<ul><li>Benchmarks.</li><li>Rater progress.</li><li>Model mapping.</li><li>Assignment management components.</li><li>Stats components.</li><li>Reset controls.</li></ul>
+<p>The CSV export route returns:</p>
+<ul><li>Rater name.</li><li>Benchmark id.</li><li>Question id.</li><li>Blinded model key.</li><li>True model name if available.</li><li>Model order.</li><li>Four rating dimensions.</li><li>Harm/hallucination flags.</li><li>Notes.</li><li>Completion state.</li><li>Timestamps.</li></ul>
+<p>This is the right shape for downstream statistical analysis.</p>
+<h3 id="security-caveat">Security Caveat</h3>
+<p>The local clone contains <code>clinical_eval_platform/proxy.js</code>, which protects <code>/admin/:path*</code> and <code>/api/admin/:path*</code> with HTTP Basic Auth when <code>ADMIN_PASSWORD</code> is set. This resolves the earlier connector-only uncertainty about whether the admin page and export route are protected.</p>
+<p>The security conclusion is therefore narrower and more practical:</p>
+<ul><li>If <code>ADMIN_PASSWORD</code> is set and the deployment platform runs Next&#x27;s proxy layer correctly, <code>/admin</code> and <code>/api/admin/*</code> should be protected.</li><li>If <code>ADMIN_PASSWORD</code> is blank, admin pages and exports are intentionally open.</li><li>Before using real rater names, notes, clinical queries, or model mappings, verify the deployed app actually applies <code>proxy.js</code> to the export route and admin page.</li></ul>
+<p>This still matters because the export route includes rater names, notes, benchmark IDs, question IDs, and model mappings. If benchmark questions are de-identified clinical queries, export exposure could become a privacy and governance issue.</p>
+<h2 id="evidence-map-article-claims-to-code">Evidence Map: Article Claims To Code</h2>
+<div class="table-wrap"><table><thead><tr><th>Article claim or method</th><th>Code support</th><th>Notes</th></tr></thead><tbody><tr><td>500 HealthBench single-turn prompts sampled with seed 62</td><td><code>prepare_healthbench_questions</code></td><td>Public CLI supports this directly.</td></tr><tr><td>500 MedQA questions sampled with seed 62</td><td>Not clearly exposed as a public CLI command</td><td>Raw MedQA is public, but a MedQA prep command was not found.</td></tr><tr><td>Frontier models generated with temperature 0.0 and seed 62 where supported</td><td><code>generate_answers</code> defaults</td><td>Code warns where seed is unsupported or ignored.</td></tr><tr><td>Search enabled for frontier API models</td><td><code>--enable-search</code> provider branches</td><td>Search failure may fall back to no-search and is logged.</td></tr><tr><td>OpenEvidence and UpToDate queried manually through browser interfaces</td><td><code>manual_only</code> and <code>import_from_source</code> modes</td><td>Public repo does not automate browser extraction.</td></tr><tr><td>MedQA final answer extraction by GPT-4.1 with regex check</td><td><code>process_medqa</code>, <code>MultiChoiceFilter</code></td><td>Aligns with Methods; manual verification of disagreements is not automated.</td></tr><tr><td>HealthBench judged by panel of three LLMs</td><td><code>score_criterion_panel</code>, default panel model list</td><td>Tie and failure defaults should be reported.</td></tr><tr><td>RCQ blinded clinician review with three ratings per response</td><td><code>build-benchmark.mjs</code>, <code>response_review_slots</code>, <code>EvalClient</code></td><td>App supports three slots per question-model response.</td></tr><tr><td>RCQ private data not released</td><td>Generated benchmark files ignored; public repo contains app not data</td><td>Matches data availability constraints.</td></tr><tr><td>Article statistical tests and figures</td><td>Not found in inspected public files</td><td>Pipeline produces scores/exports, but manuscript stats likely external.</td></tr></tbody></table></div>
+<h2 id="important-technical-findings">Important Technical Findings</h2>
+<h3 id="1-the-repository-matches-the-article-s-high-level-workflow">1. The repository matches the article&#x27;s high-level workflow</h3>
+<p>The code is not a toy example. It has real support for multi-provider generation, deterministic run parameters, per-row checkpointing, HealthBench rubric scoring, panel judging, blinded rater assignments, and admin export.</p>
+<p>For a research codebase, the separation is reasonable:</p>
+<ul><li>Python for benchmark generation/scoring.</li><li>Next.js for clinician review.</li><li>Postgres for rater state.</li><li>Local files for private benchmark bundles.</li></ul>
+<h3 id="2-it-is-not-a-complete-reproduction-package">2. It is not a complete reproduction package</h3>
+<p>The public repo does not include:</p>
+<ul><li>The RCQ dataset.</li><li>The manually collected browser outputs.</li><li>A visible MedQA preparation command.</li><li>Article-level statistical scripts.</li><li>Raw generated outputs used for the paper.</li><li>A frozen dependency lockfile for Python.</li><li>A guaranteed way to access historical model versions.</li></ul>
+<p>That does not make the code invalid. It means the code should be described as &quot;supporting code&quot; and &quot;workflow code,&quot; not a complete deterministic reproduction artifact.</p>
+<h3 id="3-medqa-preparation-needs-documentation">3. MedQA preparation needs documentation</h3>
+<p>The article says the MedQA 500-item subset is reproducible with seed <code>62</code>, but the public pipeline&#x27;s MedQA scorer expects prepared prompts, not raw Hugging Face rows. The report should not imply that a user can point <code>process_medqa</code> directly at the Hugging Face dataset.</p>
+<p>A robust reproduction should add:</p>
+<ul><li>A <code>prepare-medqa</code> subcommand.</li><li>Exact seed behavior.</li><li>Exact split choice.</li><li>Exact prompt template.</li><li><code>correct = answer_idx</code>.</li><li>Stable row ids.</li></ul>
+<h3 id="4-manual-model-imports-are-central-not-optional">4. Manual model imports are central, not optional</h3>
+<p>OpenEvidence, UpToDate Expert AI, and Google AI Overview are not API-driven in this repo. The code treats them as manual/imported outputs. Any reproduction that omits the exact manually collected outputs cannot reproduce the clinical-tool comparison.</p>
+<p>This also means output formatting is not normalized. The article intentionally preserves each system&#x27;s interface-like answer style because clarity and usability are part of the evaluation.</p>
+<h3 id="5-healthbench-grading-is-strong-but-not-neutral">5. HealthBench grading is strong but not neutral</h3>
+<p>The panel design is better than relying on one judge model, but it still uses frontier LLMs to judge frontier LLMs and clinical tools. The article explicitly acknowledges this limitation.</p>
+<p>Code-level concerns:</p>
+<ul><li>Majority among available votes can become a two-model or one-model decision if judge calls fail.</li><li>Ties default to false.</li><li>All failures default to false.</li><li>False default benefits negative criteria by avoiding penalties.</li><li>Failures are recorded, but downstream summaries must actually inspect them.</li></ul>
+<h3 id="6-search-fallback-can-change-experimental-conditions">6. Search fallback can change experimental conditions</h3>
+<p>The generation code may fall back from search-enabled generation to no-search generation. This is useful for operational completion, but if it happens in a benchmark run, rows are not all generated under the same condition.</p>
+<p>A rigorous analysis should include:</p>
+<ul><li>Number of search fallback attempts by model.</li><li>Number of fallback successes and failures.</li><li>Whether fallback rows were excluded, retained, or sensitivity-tested.</li></ul>
+<h3 id="7-the-clinician-platform-s-assignment-model-is-thoughtful">7. The clinician platform&#x27;s assignment model is thoughtful</h3>
+<p>The app does more than present random rows. It seeds response-level slots, claims work per rater, avoids duplicates, and randomizes response order per rater. That supports blinded review and reduces ordering bias.</p>
+<p>The platform also keeps a model map separate from rater-facing benchmark data, which is the right blinding architecture.</p>
+<h3 id="8-admin-security-should-be-tightened-before-real-deployment">8. Admin security should be tightened before real deployment</h3>
+<p>The inspected code shows inconsistent admin authentication coverage. For internal research use behind a protected network, this may be handled externally. For internet deployment, it is not enough to rely on an environment variable if not all admin routes use it.</p>
+<p>Specific route to review first:</p>
+<ul><li><code>clinical_eval_platform/app/api/admin/export/route.js</code></li></ul>
+<h3 id="9-the-public-repository-does-not-appear-to-implement-manuscript-statistics">9. The public repository does not appear to implement manuscript statistics</h3>
+<p>The article reports McNemar tests, Wilcoxon signed-rank tests, Nemenyi tests, cumulative link models, mixed models, Krippendorff&#x27;s alpha, PABAK, Cochran&#x27;s Q, Fisher&#x27;s exact tests, and bootstrap confidence intervals.</p>
+<p>The inspected public code does not appear to implement that statistical analysis layer. It produces scored data and CSV exports that can feed such an analysis, but the final manuscript statistics appear to be outside the visible code paths.</p>
+<p>This is important for technical readers: running <code>evaluate-matrix</code> is not the same as recreating Figure 2 or Extended Data Figure 3.</p>
+<h2 id="reproducibility-assessment">Reproducibility Assessment</h2>
+<h3 id="local-verification-performed">Local Verification Performed</h3>
+<p>After the initial report, I cloned the repository locally and ran a bounded static verification pass.</p>
+<p>Local clone:</p>
+<ul><li>Repository was cloned into a local audit workspace.</li><li>Commit: <code>1701ddf287cfc2fb0a6ba0fac06d88ffdb01238c</code></li><li>Working tree after static checks: clean</li></ul>
+<p>Static checks:</p>
+<ul><li><code>python evaluation_pipeline.py --help</code> ran successfully and exposed the expected subcommands.</li><li>Python AST parsing succeeded for <code>clinical_tools_extract/evaluation_pipeline.py</code> and <code>clinical_tools_extract/rerun_failed_healthbench.py</code>.</li><li><code>python -m py_compile</code> was attempted but the sandbox denied writing <code>__pycache__</code>; this was a filesystem-permission issue, not a syntax failure.</li><li><code>node --check clinical_eval_platform/scripts/build-benchmark.mjs</code> passed.</li><li><code>clinical_eval_platform/package.json</code> and <code>package-lock.json</code> are present; dependencies are <code>next</code>, <code>postgres</code>, <code>react</code>, <code>react-dom</code>, and dev dependency <code>xlsx</code>.</li><li><code>clinical_eval_platform/proxy.js</code> exists and protects <code>/admin/:path*</code> and <code>/api/admin/:path*</code> when <code>ADMIN_PASSWORD</code> is set.</li></ul>
+<p>Small sample files were saved in a local audit workspace:</p>
+<ul><li><code>medqa_rows_0_3.json</code></li><li><code>healthbench_consensus_first3.jsonl</code></li><li><code>healthbench_prepared_from_first3.jsonl</code></li></ul>
+<p>MedQA sample verification:</p>
+<ul><li>The first three MedQA rows contain <code>question</code>, <code>answer</code>, <code>options</code>, <code>meta_info</code>, <code>answer_idx</code>, and <code>metamap_phrases</code>.</li><li>They do not contain a <code>correct</code> key.</li><li>Their <code>question</code> text does not contain <code>## Choices</code>.</li><li>Their <code>question</code> text does not contain <code>## Instructions</code>.</li><li>The local pipeline&#x27;s <code>process_medqa</code> function expects <code>row[&quot;correct&quot;]</code> and splits the question text on <code>## Choices</code> and <code>## Instructions</code>.</li></ul>
+<p>Conclusion: raw Hugging Face MedQA rows are not in the shape expected by the local MedQA scorer. A preparation step is required.</p>
+<p>HealthBench sample verification:</p>
+<ul><li>The Hugging Face dataset-server <code>rows</code> endpoint failed for HealthBench because of the known schema cast issue across files.</li><li>A direct byte-range download from <code>consensus_2025-05-09-20-00-46.jsonl</code> succeeded.</li><li>The first three raw HealthBench records had <code>prompt</code>, <code>prompt_id</code>, <code>rubrics</code>, <code>example_tags</code>, <code>ideal_completions_data</code>, and <code>canary</code>.</li><li>Two of the first three records were single-turn user prompts.</li><li>Running <code>prepare-healthbench</code> on the sample produced two prepared rows from three raw records.</li><li>The initial prepared run failed only when the sample file had a Windows UTF-8 BOM; rewriting the sample as plain UTF-8 made the command succeed.</li></ul>
+<p>Conclusion: the HealthBench preparation path works locally for single-turn records, but Windows-generated BOM files and the Hugging Face dataset-server schema issue are practical reproducibility hazards.</p>
+<h3 id="what-is-reproducible-from-public-materials">What is reproducible from public materials</h3>
+<p>With API keys, dependencies, and additional preparation work, a user can plausibly reproduce:</p>
+<ul><li>A HealthBench 500-item sample using seed <code>62</code>.</li><li>Frontier model answer generation for currently available model endpoints.</li><li>HealthBench scoring with a panel of currently available judge endpoints.</li><li>MedQA scoring once the MedQA rows are transformed into the expected prompt format.</li><li>A blinded clinician review app using any local query/response matrix.</li><li>CSV exports for downstream statistical analysis.</li></ul>
+<h3 id="what-is-partially-reproducible">What is partially reproducible</h3>
+<p>The public MedQA sample is partially reproducible. The source dataset and seed are public, but the exact transformation into <code>data/benchmarks/medqa_500.jsonl</code> is not fully captured by a public command in the inspected code.</p>
+<p>The HealthBench sample is more directly reproducible, but the Hugging Face dataset-server schema issue means users should load a specific HealthBench file carefully rather than assume all dataset-server endpoints work.</p>
+<p>The frontier model outputs are only partially reproducible because modern model APIs drift, model aliases change, search tools change, and supported parameters differ by provider.</p>
+<h3 id="what-is-not-publicly-reproducible">What is not publicly reproducible</h3>
+<p>The RCQ benchmark is not publicly reproducible because the dataset is private and clinically derived.</p>
+<p>The clinical tool outputs are not reproducible unless the original browser-collected output files are provided or the tools are re-queried under the same conditions.</p>
+<p>The exact manuscript statistics are not reproducible from the inspected repository alone because the statistical analysis code and source response matrices are not visible.</p>
+<h3 id="recommendation-on-further-runs">Recommendation On Further Runs</h3>
+<p>Do not jump to an API-backed reproduction yet. The next useful work is still no-cost or low-cost engineering validation:</p>
+<ol><li>Add or write a small MedQA preparation script that transforms raw Hugging Face rows into the pipeline&#x27;s expected <code>question</code> and <code>correct</code> shape.</li><li>Build a three-row synthetic run fixture with known answers so MedQA scoring can be tested without calling GPT-4.1 for extraction.</li><li>Build a tiny RCQ-style <code>query_responses.csv</code> fixture and run <code>scripts/build-benchmark.mjs</code> after <code>npm ci</code>.</li><li>Run the Next app against a local or disposable Postgres database only if the fixture build succeeds.</li><li>Only then consider an API-backed reproduction, starting with a tiny 5-row frontier-model run and explicit cost guardrails.</li></ol>
+<p>An API-backed reproduction is not worth doing until the public data transformation and local fixture paths are clean. Otherwise, paid model calls would test a partly ambiguous setup rather than the article&#x27;s actual workflow.</p>
+<p>My decision: a small no-cost smoke test is worth continuing; a paid/API-backed reproduction is premature.</p>
+<h3 id="no-cost-smoke-test-status">No-Cost Smoke Test Status</h3>
+<p>Already completed:</p>
+<ul><li>Local repo clone.</li><li>Python CLI help check.</li><li>Python AST syntax check.</li><li>Node syntax check for <code>build-benchmark.mjs</code>.</li><li>Small MedQA sample schema inspection.</li><li>Small HealthBench sample schema inspection.</li><li>HealthBench <code>prepare-healthbench</code> run on three raw sample records, producing two prepared rows.</li><li>MedQA transformation fixture from three raw Hugging Face sample rows into the pipeline&#x27;s expected <code>question</code> plus <code>correct</code> shape.</li><li>MedQA no-cost scorer fixture using fake model answers for one correct, one wrong, and one invalid response.</li></ul>
+<p>MedQA fixture outputs:</p>
+<ul><li><code>medqa_fixture_smoke_test.py</code></li><li><code>medqa_prepared_fixture.jsonl</code></li><li><code>medqa_model_answers_fixture.jsonl</code></li><li><code>medqa_fixture_smoke_result.json</code></li></ul>
+<p>MedQA fixture result:</p>
+<ul><li>Status: pass.</li><li>Raw rows inspected: 3.</li><li>Prepared rows written and reloaded through the repo loader: 3.</li><li>Prepared-shape failures: 0.</li><li>Regex smoke cases: 1 correct, 1 wrong, 1 invalid.</li><li>Regex accuracy counting invalid as wrong: 1/3.</li><li>No GPT-4.1 or other paid API call was made.</li></ul>
+<p>Not yet completed:</p>
+<ul><li>Frontend dependency install and build-benchmark fixture run.</li><li>Local Postgres-backed rater app check.</li></ul>
+<h3 id="minimum-reproducibility-checklist">Minimum reproducibility checklist</h3>
+<p>To reproduce the public benchmark portion as rigorously as possible:</p>
+<ol><li>Record exact repository commit.</li><li>Create a Python virtual environment.</li><li>Install <code>clinical_tools_extract/requirements.txt</code>.</li><li>Download fixed MedQA and HealthBench source files by dataset SHA, not floating latest.</li><li>Prepare MedQA rows with an explicitly documented template.</li><li>Run <code>prepare-healthbench</code> with seed <code>62</code> and limit <code>500</code>.</li><li>Define a model registry with exact provider, model id, API model name, and source files.</li><li>Generate frontier outputs with temperature <code>0.0</code>, seed <code>62</code> where supported, and search enabled.</li><li>Import clinical tool outputs through <code>import_from_source</code>.</li><li>Preserve raw outputs and <code>.run.json</code> metadata.</li><li>Score MedQA and HealthBench.</li><li>Export all scored outputs.</li><li>Run independent statistics from a versioned analysis notebook or script.</li><li>Report fallback counts, failed judge counts, invalid answer counts, and missing source rows.</li></ol>
+<h2 id="non-technical-interpretation">Non-Technical Interpretation</h2>
+<h3 id="for-clinicians">For clinicians</h3>
+<p>The study suggests that specialized clinical AI tools should not be assumed to be better simply because they are marketed for medicine. In the tested tasks, the frontier LLMs performed better on exam-style questions, rubric-scored health responses, and blinded clinician ratings of real clinical queries.</p>
+<p>However, this does not mean clinicians should use frontier LLMs without safeguards. The study does not assess all clinical workflows, does not test live patient-care integration, does not evaluate citation reliability, and does not replace local clinical governance.</p>
+<p>Clinicians should read this as evidence that independent evaluation matters. A model&#x27;s interface, institution, pricing, or clinical branding is not enough.</p>
+<h3 id="for-health-system-leaders">For health system leaders</h3>
+<p>The procurement implication is direct: demand head-to-head evidence before adopting or renewing clinical AI tools. Require local validation on your own tasks and users. Include frontline clinicians in blinded review. Measure safety, completeness, clarity, refusal behavior, latency, citation quality, and workflow fit.</p>
+<p>A specialized tool may still be worth buying if it integrates well, cites sources reliably, handles governance, supports audit logs, protects data, and reduces liability. But those are separate claims from raw answer quality. They need their own evidence.</p>
+<h3 id="for-compliance-and-governance-teams">For compliance and governance teams</h3>
+<p>The RCQ dataset is private for a reason. Even de-identified clinician queries can be sensitive. If this platform is adapted locally, generated benchmark bundles and exported CSVs should be treated as potentially sensitive research data.</p>
+<p>Before deployment:</p>
+<ul><li>Protect admin routes.</li><li>Protect exports.</li><li>Avoid public hosting of real query text.</li><li>Verify database access controls.</li><li>Establish data retention rules.</li><li>Review IRB or quality-improvement requirements.</li><li>Log model versions and collection dates.</li></ul>
+<h3 id="for-technical-teams">For technical teams</h3>
+<p>The repository is useful as a benchmark scaffold. It is not enough by itself to certify a model or reproduce the paper. Engineering teams should harden it before production-like use:</p>
+<ul><li>Add lockfiles.</li><li>Add schema migrations instead of lazy schema creation if deployed long-term.</li><li>Add tests around scoring edge cases.</li><li>Add explicit MedQA preparation.</li><li>Add stronger auth for admin/export.</li><li>Add dataset pinning.</li><li>Add statistical notebooks.</li><li>Add structured provenance for imported browser outputs.</li></ul>
+<h2 id="technical-risk-register">Technical Risk Register</h2>
+<div class="table-wrap"><table><thead><tr><th>Risk</th><th>Why it matters</th><th>Severity</th><th>Mitigation</th></tr></thead><tbody><tr><td>Private RCQ data unavailable</td><td>Cannot independently recreate strongest evidence layer</td><td>High</td><td>Treat RCQ findings as article evidence; reproduce only with local private data under governance.</td></tr><tr><td>Manual browser outputs unavailable</td><td>Clinical tool results cannot be regenerated from public code</td><td>High</td><td>Require source output files or rerun browser collection with documented protocol.</td></tr><tr><td>MedQA preparation not exposed</td><td>Different users may create different prompts</td><td>High</td><td>Add <code>prepare-medqa</code> with fixed template and seed.</td></tr><tr><td>Model/API drift</td><td>Historical model behavior may not match current endpoints</td><td>High</td><td>Pin model versions where possible and record access dates.</td></tr><tr><td>LLM judge bias</td><td>Frontier models judge systems including themselves</td><td>Medium</td><td>Use multi-family panel, human audit samples, and report judge disagreement.</td></tr><tr><td>Judge failure defaults</td><td>Failed criteria default false, affecting positive and negative criteria differently</td><td>Medium</td><td>Report failure rates and rerun failed criteria from immutable copies.</td></tr><tr><td>Search fallback</td><td>Search-enabled condition may become mixed with no-search rows</td><td>Medium</td><td>Report fallback rows and run sensitivity analysis.</td></tr><tr><td>HealthBench dataset-server schema error</td><td>Automated loaders may fail depending on endpoint</td><td>Medium</td><td>Load specific files and validate schema before sampling.</td></tr><tr><td>Windows UTF-8 BOM in JSONL files</td><td>The pipeline&#x27;s JSONL loader uses plain <code>utf-8</code>, so BOM-prefixed files fail</td><td>Low to medium</td><td>Normalize local JSONL files to plain UTF-8 before pipeline runs.</td></tr><tr><td>Admin protection depends on <code>ADMIN_PASSWORD</code> and Next proxy execution</td><td>Rater data and model mapping may be exposed if admin password is blank or proxy is bypassed</td><td>High for deployed app</td><td>Set <code>ADMIN_PASSWORD</code> and verify <code>/admin</code> plus <code>/api/admin/export</code> require auth in the deployed environment.</td></tr><tr><td>No manuscript statistics code visible</td><td>Scores do not directly reproduce article figures</td><td>Medium</td><td>Add R/Python stats scripts and figure notebooks.</td></tr><tr><td>No latency/citation analysis</td><td>Important clinical workflow dimensions omitted</td><td>Medium</td><td>Add separate evaluation for latency, citation quality, and source traceability.</td></tr></tbody></table></div>
+<h2 id="suggested-follow-on-work">Suggested Follow-On Work</h2>
+<h3 id="if-the-goal-is-a-publishable-technical-reproduction">If the goal is a publishable technical reproduction</h3>
+<p>Add a reproducibility package around the public benchmark:</p>
+<ul><li><code>prepare_medqa.py</code> or a new <code>prepare-medqa</code> CLI subcommand.</li><li>Dataset pinning by Hugging Face revision SHA.</li><li>A sample model registry template.</li><li>Small fixture datasets for tests.</li><li>Unit tests for answer extraction, HealthBench negative criteria, panel voting, and source import alignment.</li><li>A statistics notebook that starts from <code>processed.jsonl</code> and <code>scored.json</code>.</li><li>A run manifest that records every input and output hash.</li></ul>
+<h3 id="if-the-goal-is-a-local-hospital-evaluation">If the goal is a local hospital evaluation</h3>
+<p>Use the platform but change the governance envelope:</p>
+<ul><li>Use only de-identified local queries approved by the institution.</li><li>Host behind institution SSO or VPN.</li><li>Add admin route protection before entering data.</li><li>Separate the blinded rater bundle from the model map.</li><li>Define rater training and adjudication rules.</li><li>Export results to a controlled analytics environment.</li><li>Include model cost, latency, citation quality, and refusal behavior.</li></ul>
+<h3 id="if-the-goal-is-a-non-technical-briefing">If the goal is a non-technical briefing</h3>
+<p>Emphasize:</p>
+<ul><li>Clinical AI branding is not proof of superiority.</li><li>Frontier LLMs did better in this study, but they still need governance.</li><li>RCQ is the most meaningful benchmark because it reflects clinician queries.</li><li>Independent evaluation should be part of AI procurement.</li><li>Safety is more than accuracy: it includes omissions, clarity, refusals, hallucinations, and workflow fit.</li></ul>
+<h2 id="technical-appendix-file-by-file-notes">Technical Appendix: File-By-File Notes</h2>
+<h3 id="readme-md"><code>README.md</code></h3>
+<p>The README is accurate as an orientation layer. It describes the two code areas, gives installation examples, and states that OpenEvidence, UpToDate Expert AI, and Google Search AI Overview were collected outside the public repo and should be imported as pre-collected outputs through <code>data/runs/model_registry.json</code>.</p>
+<p>The README is also the clearest public statement that the repository is not trying to automate browser extraction for proprietary clinical systems.</p>
+<h3 id="clinical-tools-extract-evaluation-pipeline-py"><code>clinical_tools_extract/evaluation_pipeline.py</code></h3>
+<p>This is the central benchmark file. It contains:</p>
+<ul><li>Constants for model IDs, default panel models, temperature, seed, retries, and timeouts.</li><li>Input loaders for JSON, JSONL, and XLSX.</li><li>Model-registry resolution.</li><li>HealthBench preparation.</li><li>Multi-provider model generation.</li><li>MedQA answer extraction and scoring.</li><li>HealthBench rubric scoring.</li><li>Matrix status and matrix evaluation.</li><li>Benchmark CSV generation for the blinded review app.</li><li>CLI parser and command dispatch.</li></ul>
+<p>Key subcommands:</p>
+<ul><li><code>prepare-healthbench</code></li><li><code>generate</code></li><li><code>generate-benchmark-csv</code></li><li><code>medqa</code></li><li><code>healthbench</code></li><li><code>matrix-status</code></li><li><code>evaluate-matrix</code></li></ul>
+<p>The file is intentionally broad. For long-term maintainability, it would benefit from being split into modules such as <code>io.py</code>, <code>providers.py</code>, <code>medqa.py</code>, <code>healthbench.py</code>, <code>matrix.py</code>, and <code>cli.py</code>. That is not required for reproducing the paper, but it would make testing easier.</p>
+<h3 id="clinical-tools-extract-rerun-failed-healthbench-py"><code>clinical_tools_extract/rerun_failed_healthbench.py</code></h3>
+<p>This helper reruns only HealthBench criteria where panel grading produced failures. It loads existing <code>scored.json</code>, identifies failed criteria, calls the panel scorer again, replaces those criterion scores, and recomputes totals.</p>
+<p>Because it writes the scored file in place, a rigorous workflow should copy or version the scored file before using this script.</p>
+<h3 id="clinical-tools-extract-requirements-txt"><code>clinical_tools_extract/requirements.txt</code></h3>
+<p>The dependency list is intentionally small but not pinned by version. For exact reproducibility, a lockfile or frozen <code>pip freeze</code> output should be captured at run time.</p>
+<h3 id="clinical-tools-extract-env-example"><code>clinical_tools_extract/.env.example</code></h3>
+<p>This file documents the required provider API keys and HealthBench grader retry settings. It does not include any model registry example, which would be useful for users importing clinical tool outputs.</p>
+<h3 id="clinical-eval-platform-scripts-build-benchmark-mjs"><code>clinical_eval_platform/scripts/build-benchmark.mjs</code></h3>
+<p>This script is the bridge between a local model-response matrix and the blinded web app. It:</p>
+<ul><li>Reads <code>query_responses.csv</code> or legacy <code>query_responses.xlsx</code>.</li><li>Detects id and question columns.</li><li>Treats all other non-empty columns as model response columns.</li><li>Generates stable benchmark IDs from the source file hash.</li><li>Writes a blinded public benchmark JSON.</li><li>Writes a hidden model map.</li><li>Writes a benchmark question index for assignment seeding.</li></ul>
+<p>This is one of the cleanest pieces of the codebase because it enforces the blinding boundary.</p>
+<h3 id="clinical-eval-platform-app-page-jsx"><code>clinical_eval_platform/app/page.jsx</code></h3>
+<p>This is the rater landing page. It stores session information in local storage, supports optional access codes, and lets a returning rater resume or switch identity.</p>
+<p>The identity model is suitable for a controlled research study but not for strong user authentication.</p>
+<h3 id="clinical-eval-platform-app-eval-evalclient-jsx"><code>clinical_eval_platform/app/eval/EvalClient.jsx</code></h3>
+<p>This is the main rater experience. It:</p>
+<ul><li>Loads <code>public/benchmark.json</code>.</li><li>Loads or claims assignments.</li><li>Randomizes question order and response order per rater.</li><li>Tracks completion.</li><li>Saves ratings.</li><li>Supports auto-advance.</li><li>Falls back to showing all benchmark items if assignment lookup fails because the database is unavailable.</li></ul>
+<p>The deterministic per-rater shuffling is a good design choice because it reduces presentation bias while remaining stable across browser refreshes.</p>
+<h3 id="clinical-eval-platform-app-api-session-route-js"><code>clinical_eval_platform/app/api/session/route.js</code></h3>
+<p>This route creates or resumes rater sessions. It normalizes names, checks optional access code, prevents duplicate rows under concurrent logins using an advisory lock, and reuses an existing rater row by name.</p>
+<h3 id="clinical-eval-platform-app-api-assignments-route-js"><code>clinical_eval_platform/app/api/assignments/route.js</code></h3>
+<p>This route manages response-level assignment slots. It is central to the three-raters-per-response design. Its &quot;steal only if no unassigned slots remain and current assignee has not started&quot; rule is a reasonable compromise between study completion and fairness.</p>
+<h3 id="clinical-eval-platform-app-api-evaluations-route-js"><code>clinical_eval_platform/app/api/evaluations/route.js</code></h3>
+<p>This route loads and saves rater evaluations. It validates all rating values, gates writes to assigned items when slots exist, upserts rows, and marks a row complete only when all required axes and binary flags are filled.</p>
+<h3 id="clinical-eval-platform-lib-server-schema-js"><code>clinical_eval_platform/lib/server/schema.js</code></h3>
+<p>This file lazily creates all Postgres tables and seeds model mappings and review slots. Lazy schema creation is convenient for a research app, but a production deployment should consider explicit migrations.</p>
+<h3 id="clinical-eval-platform-lib-server-db-js"><code>clinical_eval_platform/lib/server/db.js</code></h3>
+<p>This file resolves the Postgres connection string from common environment variables and creates a small connection pool. In production it requires SSL.</p>
+<h3 id="clinical-eval-platform-app-admin-page-jsx"><code>clinical_eval_platform/app/admin/page.jsx</code></h3>
+<p>The admin page renders benchmark progress, rater progress, model mapping, stats, assignment management, rater management, and reset controls. The page itself does not implement auth checks, but local <code>proxy.js</code> protects <code>/admin/:path*</code> when <code>ADMIN_PASSWORD</code> is set.</p>
+<h3 id="clinical-eval-platform-app-api-admin-export-route-js"><code>clinical_eval_platform/app/api/admin/export/route.js</code></h3>
+<p>This route exports clinician ratings as CSV. It includes rater names, model mapping, notes, flags, and timestamps. The route itself does not implement auth checks, but local <code>proxy.js</code> protects <code>/api/admin/:path*</code> when <code>ADMIN_PASSWORD</code> is set.</p>
+<p>This route should still be verified in the deployed environment because it is the most sensitive egress path.</p>
+<h3 id="clinical-eval-platform-proxy-js"><code>clinical_eval_platform/proxy.js</code></h3>
+<p>This file applies HTTP Basic Auth to <code>/admin/:path*</code> and <code>/api/admin/:path*</code> when <code>ADMIN_PASSWORD</code> is configured. If <code>ADMIN_PASSWORD</code> is blank, the proxy intentionally allows access.</p>
+<h3 id="clinical-eval-platform-app-api-admin-stats-route-js"><code>clinical_eval_platform/app/api/admin/stats/route.js</code></h3>
+<p>This route computes admin dashboard metrics and does include an admin Basic Auth check when <code>ADMIN_PASSWORD</code> is set.</p>
+<h3 id="clinical-eval-platform-app-api-admin-reset-route-js"><code>clinical_eval_platform/app/api/admin/reset/route.js</code></h3>
+<p>This route resets benchmark evaluations and assignments. It includes admin Basic Auth and confirmation strings such as <code>NUKE</code> or <code>NUKE ALL</code>.</p>
+<h3 id="clinical-eval-platform-app-api-admin-raters-route-js"><code>clinical_eval_platform/app/api/admin/raters/route.js</code></h3>
+<p>This route manages raters and includes admin Basic Auth. Deleting a rater also deletes their evaluations and clears their assignments.</p>
+<h3 id="clinical-eval-platform-env-example"><code>clinical_eval_platform/.env.example</code></h3>
+<p>The platform expects a Postgres URL and optionally supports:</p>
+<ul><li><code>EVAL_ACCESS_CODE</code></li><li><code>NEXT_PUBLIC_DEFAULT_ASSIGNMENT_COUNT</code></li><li><code>ADMIN_USER</code></li><li><code>ADMIN_PASSWORD</code></li></ul>
+<p>The file&#x27;s admin protection comment should be reconciled with the actual route-level checks before deployment.</p>
+<h2 id="technical-appendix-command-map">Technical Appendix: Command Map</h2>
+<p>These commands describe the workflow. They are not run as part of this audit.</p>
+<p>Install Python pipeline:</p>
+<pre><code class="language-bash">cd clinical_tools_extract
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env</code></pre>
+<p>Prepare HealthBench:</p>
+<pre><code class="language-bash">python evaluation_pipeline.py prepare-healthbench \
+  --dataset data/source/healthbench.jsonl \
+  --output data/benchmarks/healthbench_500.jsonl \
+  --limit 500 \
+  --seed 62</code></pre>
+<p>Generate frontier model outputs:</p>
+<pre><code class="language-bash">python evaluation_pipeline.py generate \
+  --input data/benchmarks/healthbench_500.jsonl \
+  --model openai-gpt-5-2 \
+  --output data/runs/openai-gpt-5-2/healthbench/raw.jsonl \
+  --enable-search \
+  --allow-error-rows \
+  --checkpoint-every 25</code></pre>
+<p>Import clinical tool outputs through a model registry:</p>
+<pre><code class="language-bash">python evaluation_pipeline.py generate \
+  --input data/benchmarks/healthbench_500.jsonl \
+  --model openevidence-web \
+  --model-registry data/runs/model_registry.json \
+  --output data/runs/openevidence-web/healthbench/raw.jsonl</code></pre>
+<p>Score MedQA:</p>
+<pre><code class="language-bash">python evaluation_pipeline.py medqa \
+  --input data/runs/openai-gpt-5-2/medqa/raw.jsonl \
+  --output data/runs/openai-gpt-5-2/medqa/processed.jsonl</code></pre>
+<p>Score HealthBench:</p>
+<pre><code class="language-bash">python evaluation_pipeline.py healthbench \
+  --input data/runs/openai-gpt-5-2/healthbench/raw.jsonl \
+  --output data/runs/openai-gpt-5-2/healthbench/scored.json</code></pre>
+<p>Evaluate the default matrix:</p>
+<pre><code class="language-bash">python evaluation_pipeline.py evaluate-matrix \
+  --runs-root data/runs</code></pre>
+<p>Build a clinician review bundle:</p>
+<pre><code class="language-bash">cd clinical_eval_platform
+npm install
+cp .env.example .env
+npm run build</code></pre>
+<p>Run the clinician review app locally:</p>
+<pre><code class="language-bash">npm run dev</code></pre>
+<h2 id="technical-appendix-glossary">Technical Appendix: Glossary</h2>
+<ul><li>API model: The provider-specific model name actually sent to OpenAI, Anthropic, or Google.</li><li>Benchmark matrix: The set of model-by-benchmark raw output files under <code>data/runs</code>.</li><li>Blinding: Hiding true model identity from clinician raters by using labels such as <code>Model_A</code>.</li><li>Clinical correctness: Whether the answer is medically accurate and nuanced.</li><li>Completeness: Whether the answer covers the important clinical content.</li><li>Frontier LLM: A general-purpose state-of-the-art model from a major model provider.</li><li>HealthBench: A rubric-based benchmark for health assistant responses.</li><li>LLM-as-judge: Use of a model to score another model&#x27;s output against criteria.</li><li>MedQA: A multiple-choice USMLE-style medical exam benchmark.</li><li>Model registry: Local JSON that maps model IDs to provider modes, API model names, and source files.</li><li>RCQ: Real Clinical Queries, the article&#x27;s private benchmark derived from clinician use.</li><li>RAG: Retrieval-augmented generation, where a model retrieves external documents before answering.</li><li>Refusal: A model response that declines to answer rather than providing substantive content.</li><li>Rubric: A list of criteria and points used to score an answer.</li><li>Search-enabled generation: Model generation with provider search tools enabled.</li></ul>
+<h2 id="bottom-line-assessment">Bottom-Line Assessment</h2>
+<p>The article makes a strong and timely argument: specialized clinical AI tools should be independently benchmarked against frontier general-purpose LLMs before institutions assume they are better. The public codebase supports much of that evaluation workflow, especially HealthBench scoring and blinded clinician review, but it should not be mistaken for a full reproduction artifact.</p>
+<p>The most technically valuable part of the code is the architecture: generation/import separated from scoring, scoring separated from blinded clinician review, and review exports separated from downstream statistics. The most important reproducibility gaps are external to the core architecture: private RCQ data, manual browser-collected outputs, missing MedQA preparation, and missing manuscript statistics scripts.</p>
+<p>For a mixed technical and non-technical audience, the key message is this: the study is not a permission slip to deploy frontier LLMs freely in medicine. It is evidence that clinical AI tools need independent, transparent, head-to-head evaluation, and that general-purpose LLMs may outperform specialized tools on many clinically relevant benchmark tasks.</p>
+<h2 id="sources">Sources</h2>
+<ul><li>Nature Medicine article DOI: https://doi.org/10.1038/s41591-026-04431-5</li><li>Public code repository: https://github.com/nyuolab/clinical-llm-benchmarks</li><li>MedQA dataset: https://huggingface.co/datasets/GBaker/MedQA-USMLE-4-options</li><li>HealthBench dataset: https://huggingface.co/datasets/openai/healthbench</li><li>Hugging Face dataset-server splits endpoint for MedQA: https://datasets-server.huggingface.co/splits?dataset=GBaker/MedQA-USMLE-4-options</li><li>Hugging Face dataset-server splits endpoint for HealthBench: https://datasets-server.huggingface.co/splits?dataset=openai/healthbench</li></ul>
+        </article>
+      </div>
+    </main>
+  </div>
+  <script>
+    const search = document.getElementById('site-search');
+    const report = document.getElementById('report');
+    const empty = document.getElementById('empty-state');
+    const sections = Array.from(report.children);
+    search?.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      let visible = 0;
+      sections.forEach((node) => {
+        if (!q) {
+          node.classList.remove('hidden-by-search');
+          visible++;
+          return;
+        }
+        const match = node.textContent.toLowerCase().includes(q);
+        node.classList.toggle('hidden-by-search', !match);
+        if (match) visible++;
+      });
+      empty.classList.toggle('show', q && visible === 0);
+    });
+  </script>
+</body>
+</html>
